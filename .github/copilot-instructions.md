@@ -65,7 +65,7 @@ workflows/
     input/                         ← User drops input DOCX files here
     extracted/                     ← Auto-generated markdown + images
     extracted/templates/           ← Auto-generated template structure
-    plan.md                        ← PLAN: generation plan (approved by user)
+    plan-YYYY-MM-DD.md             ← PLAN: generation plan (approved by user). Use ISO date in filename.
     output/                        ← DO: Copilot writes markdown here, script converts to DOCX
 ```
 
@@ -90,7 +90,7 @@ This converts input DOCX to markdown + images, and extracts template structure.
 
 ### PLAN — Create plan, stop and wait for approval
 
-After extraction, read all extracted content and create a plan file at `workflows/task-<N>-<name>/plan.md`.
+After extraction, read all extracted content and create a plan file at `workflows/task-<N>-<name>/plan-YYYY-MM-DD.md` (use ISO date `YYYY-MM-DD` in the filename).
 
 The plan must include:
 
@@ -101,6 +101,8 @@ The plan must include:
 - Phase: PLAN
 - Created: <date>
 - Approved: pending
+
+- dateCalled: <ISO-8601 timestamp>  # Timestamp when the Read tool was invoked to create this plan
 
 ## Input Documents Found
 - [x] document_name.md (X lines, Y images)
@@ -146,7 +148,7 @@ Same table format.
 
 Once the user approves (says "yes", "go ahead", "approved", "proceed", etc.):
 
-1. Update `plan.md` status to `Approved: yes`
+1. Update the plan file's status (the `plan-YYYY-MM-DD.md` you created) to `Approved: yes`
 2. Generate output markdown files in `workflows/task-<N>-<name>/output/`
    - **Every output markdown file must start with a YAML frontmatter block** (see below)
    - Follow the approved plan exactly — do not deviate
@@ -155,7 +157,7 @@ Once the user approves (says "yes", "go ahead", "approved", "proceed", etc.):
    ```bash
    python scripts/build_docx.py workflows/task-<N>-<name>
    ```
-4. Update `plan.md` status to `Phase: CHECK`
+4. Update the plan file's status (the `plan-YYYY-MM-DD.md`) to `Phase: CHECK`
 
 ---
 
@@ -180,7 +182,7 @@ After building, report to the user:
 4. Return to **CHECK** — show the changes and ask for review again
 
 **If user approves:**
-1. Update `plan.md` status to `Phase: COMPLETE`
+1. Update the plan file's status (the most recent `plan-YYYY-MM-DD.md`) to `Phase: COMPLETE`
 2. Report final output location
 3. Workflow is done
 
@@ -188,17 +190,17 @@ After building, report to the user:
 
 ## Resuming Across Conversations
 
-If a workflow was started in a previous conversation, read `plan.md` to determine where to resume:
+If a workflow was started in a previous conversation, read the most recent `plan-YYYY-MM-DD.md` (match `plan-*.md`) to determine where to resume:
 
-| `plan.md` Status | What to do |
+| `plan-*.md` Status | What to do |
 |---|---|
-| Does not exist | Start from EXTRACT |
-| `Phase: PLAN`, `Approved: pending` | Show the plan, ask for approval |
-| `Phase: PLAN`, `Approved: yes` but no output files | Start DO phase |
+| No `plan-*.md` exists | Start from EXTRACT |
+| `Phase: PLAN`, `Approved: pending` | Show the plan file you found, ask for approval |
+| `Phase: PLAN`, `Approved: yes` but no output files | Start DO phase (use that plan file) |
 | `Phase: CHECK` | Show output summary, ask for review |
 | `Phase: COMPLETE` | Report that workflow is already done |
 
-**Always read `plan.md` first — it is the single source of truth.**
+**Always read the most recent `plan-YYYY-MM-DD.md` (match `plan-*.md`) first — it is the single source of truth.**
 
 ## YAML Frontmatter
 
