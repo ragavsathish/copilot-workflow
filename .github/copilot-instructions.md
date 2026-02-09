@@ -1,3 +1,7 @@
+---
+description: "Global orchestration rules for the PDCA document generation workflow. Applies to all workflows in this repository."
+---
+
 # Copilot Workflow Instructions
 
 This repository automates document generation workflows using a **PDCA (Plan-Do-Check-Act)** lifecycle. Copilot orchestrates the full pipeline after converting input DOCX to text.

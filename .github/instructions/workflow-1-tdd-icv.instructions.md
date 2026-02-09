@@ -1,5 +1,6 @@
 ---
 applyTo: "workflows/task-1-tdd-icv/**/*"
+description: "Mapping rules for Workflow 1: generate Technical Design Document and ICV Document from four input design documents."
 ---
 
 # Workflow 1: Technical Design Document + ICV Document

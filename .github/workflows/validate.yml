@@ -1,0 +1,62 @@
+name: Validate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/**"
+      - ".github/instructions/**"
+      - ".github/agents/**"
+      - ".github/prompts/**"
+      - "requirements.txt"
+
+jobs:
+  lint-python:
+    name: Lint Python scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install flake8
+
+      - name: Run flake8
+        run: |
+          flake8 scripts/ --max-line-length=120 --count --show-source --statistics
+
+  check-instructions:
+    name: Validate instruction frontmatter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check frontmatter in instruction files
+        run: |
+          status=0
+          for file in .github/instructions/*.instructions.md; do
+            if [ -f "$file" ]; then
+              if ! head -1 "$file" | grep -q "^---$"; then
+                echo "ERROR: $file is missing YAML frontmatter"
+                status=1
+              fi
+            fi
+          done
+          exit $status
+
+  check-line-endings:
+    name: Check line endings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify LF line endings in markdown files
+        run: |
+          if grep -rPl '\r\n' --include='*.md' . 2>/dev/null; then
+            echo "ERROR: Found CRLF line endings in markdown files. Use LF only."
+            exit 1
+          fi
+          echo "All markdown files use LF line endings."

@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "scripts/**"
+      - "requirements.txt"
+
+jobs:
+  test-scripts:
+    name: Test document scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Generate test data
+        run: |
+          python scripts/create_test_data.py
+
+      - name: Test extraction
+        run: |
+          python scripts/extract_docx.py workflows/task-1-tdd-icv
+
+      - name: Verify extracted files exist
+        run: |
+          test -d workflows/task-1-tdd-icv/extracted
+          ls workflows/task-1-tdd-icv/extracted/*.md
+          echo "Extraction produced markdown files successfully."
