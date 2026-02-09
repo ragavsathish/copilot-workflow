@@ -1,6 +1,47 @@
 # Copilot Workflow Instructions
 
-This repository automates document generation workflows. Copilot orchestrates the full pipeline: extract input DOCX → **plan** → user approval → generate content → build output DOCX.
+This repository automates document generation workflows using a **PDCA (Plan-Do-Check-Act)** lifecycle. Copilot orchestrates the full pipeline after converting input DOCX to text.
+
+## PDCA Lifecycle
+
+Every workflow follows this cycle after initial extraction:
+
+```
+  ┌──────────────────────────────────────────────────────────┐
+  │  Step 0: EXTRACT (pre-cycle)                             │
+  │  Convert input DOCX → text + images                      │
+  └──────────────────────┬───────────────────────────────────┘
+                         ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  PLAN                                                    │
+  │  Read extracted content + template structure              │
+  │  Create plan.md: inputs found, section mapping, gaps     │
+  │  Show plan to user — STOP and wait for approval          │
+  └──────────────────────┬──────────────────────────────────┘
+                         ▼ (user approves)
+  ┌─────────────────────────────────────────────────────────┐
+  │  DO                                                      │
+  │  Generate output markdown following the approved plan    │
+  │  Build styled DOCX from markdown using template          │
+  └──────────────────────┬──────────────────────────────────┘
+                         ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  CHECK                                                   │
+  │  Show user: output files, section count, image count     │
+  │  User reviews the generated DOCX                         │
+  │  User flags issues or confirms quality                   │
+  └──────────────────────┬──────────────────────────────────┘
+                         ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  ACT                                                     │
+  │  If user flags issues → revise specific sections         │
+  │  Update plan.md with revision notes                      │
+  │  Rebuild DOCX                                            │
+  │  If user approves → workflow complete                    │
+  └─────────────────────────────────────────────────────────┘
+```
+
+**The cycle repeats (CHECK → ACT → CHECK) until the user approves the output.**
 
 ## Project Overview
 
@@ -24,30 +65,30 @@ workflows/
     input/                         ← User drops input DOCX files here
     extracted/                     ← Auto-generated markdown + images
     extracted/templates/           ← Auto-generated template structure
-    plan.md                        ← Generation plan (created by Copilot, approved by user)
-    output/                        ← Copilot writes markdown here, script converts to DOCX
+    plan.md                        ← PLAN: generation plan (approved by user)
+    output/                        ← DO: Copilot writes markdown here, script converts to DOCX
 ```
 
 ## Running a Workflow
 
-When a user says **"Run workflow N"** or refers to a workflow task, execute these steps in order:
+When a user says **"Run workflow N"** or refers to a workflow task, execute the PDCA steps below.
 
-### Step 1: Install dependencies (if needed)
+### Step 0: EXTRACT (pre-cycle setup)
+
+Install dependencies if needed:
 ```bash
 pip install -r requirements.txt
 ```
-Pandoc binary is also required. Install if missing:
-```bash
-pypandoc.download_pandoc()
-```
 
-### Step 2: Extract input DOCX files
+Extract input DOCX files:
 ```bash
 python scripts/extract_docx.py workflows/task-<N>-<name>
 ```
-This converts input DOCX files to markdown + images, and extracts template structure.
+This converts input DOCX to markdown + images, and extracts template structure.
 
-### Step 3: Create a plan — STOP and wait for approval
+---
+
+### PLAN — Create plan, stop and wait for approval
 
 After extraction, read all extracted content and create a plan file at `workflows/task-<N>-<name>/plan.md`.
 
@@ -55,6 +96,11 @@ The plan must include:
 
 ```markdown
 # Workflow N Plan
+
+## Status
+- Phase: PLAN
+- Created: <date>
+- Approved: pending
 
 ## Input Documents Found
 - [x] document_name.md (X lines, Y images)
@@ -83,38 +129,76 @@ Same table format.
 ## Gaps
 - List anything missing or unclear from the inputs
 - List sections that will have [To be completed] placeholders
+
+## Revision History
+| Rev | Date | Change |
+|---|---|---|
+| 1 | <date> | Initial plan |
 ```
 
 **After writing the plan, show it to the user and ask: "Does this plan look right? Should I proceed?"**
 
 **DO NOT generate any output documents until the user approves.**
 
-### Step 4: Generate output (only after approval)
+---
+
+### DO — Generate and build (only after approval)
 
 Once the user approves (says "yes", "go ahead", "approved", "proceed", etc.):
-- Read the approved `plan.md` as the guide
-- Generate output markdown files in `workflows/task-<N>-<name>/output/`
-- **Every output markdown file must start with a YAML frontmatter block** (see below)
-- Follow the plan exactly — do not deviate from what was approved
-- Reference images using: `![description](images/filename.png)`
 
-### Step 5: Build output DOCX files
-```bash
-python scripts/build_docx.py workflows/task-<N>-<name>
-```
-Pypandoc converts markdown → styled DOCX using `--reference-doc` from the Word template.
+1. Update `plan.md` status to `Approved: yes`
+2. Generate output markdown files in `workflows/task-<N>-<name>/output/`
+   - **Every output markdown file must start with a YAML frontmatter block** (see below)
+   - Follow the approved plan exactly — do not deviate
+   - Reference images using: `![description](images/filename.png)`
+3. Build output DOCX:
+   ```bash
+   python scripts/build_docx.py workflows/task-<N>-<name>
+   ```
+4. Update `plan.md` status to `Phase: CHECK`
 
-### Step 6: Confirm completion
-Report to the user what was generated and where the output files are located.
+---
+
+### CHECK — Present output for review
+
+After building, report to the user:
+- List of output files generated with file sizes
+- Number of sections filled vs placeholders
+- Number of images embedded
+- Any gaps or `[To be completed]` sections
+
+**Ask the user: "Please review the output. Any sections to revise, or is this good?"**
+
+---
+
+### ACT — Revise or complete
+
+**If user flags issues:**
+1. Note the feedback in `plan.md` revision history
+2. Revise only the specific sections the user flagged
+3. Rebuild DOCX
+4. Return to **CHECK** — show the changes and ask for review again
+
+**If user approves:**
+1. Update `plan.md` status to `Phase: COMPLETE`
+2. Report final output location
+3. Workflow is done
+
+---
 
 ## Resuming Across Conversations
 
-If a workflow was started in a previous conversation:
-- Check if `workflows/task-<N>-<name>/plan.md` exists
-- If plan exists but no output files → show the plan and ask for approval
-- If plan exists and output `.md` files exist but no `.docx` → run build step
-- If everything exists → report completion
-- Always read `plan.md` before generating — it is the source of truth for what to produce
+If a workflow was started in a previous conversation, read `plan.md` to determine where to resume:
+
+| `plan.md` Status | What to do |
+|---|---|
+| Does not exist | Start from EXTRACT |
+| `Phase: PLAN`, `Approved: pending` | Show the plan, ask for approval |
+| `Phase: PLAN`, `Approved: yes` but no output files | Start DO phase |
+| `Phase: CHECK` | Show output summary, ask for review |
+| `Phase: COMPLETE` | Report that workflow is already done |
+
+**Always read `plan.md` first — it is the single source of truth.**
 
 ## YAML Frontmatter
 
@@ -175,4 +259,4 @@ To add a new workflow (e.g., Task 2):
 - All document input/output is in DOCX format
 - Process one set of documents at a time (no batch processing)
 - Keep solutions simple and straightforward
-- Always plan before generating — never skip the approval step
+- Always follow the PDCA cycle — never skip PLAN or CHECK
