@@ -21,11 +21,9 @@ Place these DOCX files in `workflows/task-1-tdd-icv/input/`:
 
 ## Output Documents
 
-Copilot generates these as markdown in `workflows/task-1-tdd-icv/output/`, then `build_docx.py` converts them to styled DOCX.
-
 ### Output 1: Technical Design Document (`technical_design.md`)
 
-Follow the template structure from `extracted/templates/`. The content should be mapped from inputs as follows:
+Follow the template structure from `extracted/templates/`. Map content from inputs as follows:
 
 | Output Section | Primary Input Source |
 |---|---|
@@ -42,7 +40,7 @@ Follow the template structure from `extracted/templates/`. The content should be
 
 ### Output 2: ICV Document (`icv_document.md`)
 
-Follow the template structure from `extracted/templates/`. The content should be mapped from inputs as follows:
+Follow the template structure from `extracted/templates/`. Map content from inputs as follows:
 
 | Output Section | Primary Input Source |
 |---|---|
@@ -55,6 +53,13 @@ Follow the template structure from `extracted/templates/`. The content should be
 | Evidence / Screenshots | ICV Steps and Screenshots (embed images inline with each step) |
 | Results Summary | ICV Steps and Screenshots |
 | Sign-off / Approval | [To be completed — leave placeholder] |
+
+## Plan Format for This Workflow
+
+When creating `plan.md` for this workflow, the generation plan tables must use the mapping tables above. For each output section, specify:
+- The exact source file and section number from the extracted input
+- A one-line summary of the content that will be written
+- Which screenshots (by filename) will be placed in which section
 
 ## Screenshot Handling
 

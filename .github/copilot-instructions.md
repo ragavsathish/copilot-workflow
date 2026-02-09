@@ -1,6 +1,6 @@
 # Copilot Workflow Instructions
 
-This repository automates document generation workflows. Copilot orchestrates the full pipeline: extract input DOCX → generate content → build output DOCX.
+This repository automates document generation workflows. Copilot orchestrates the full pipeline: extract input DOCX → **plan** → user approval → generate content → build output DOCX.
 
 ## Project Overview
 
@@ -24,6 +24,7 @@ workflows/
     input/                         ← User drops input DOCX files here
     extracted/                     ← Auto-generated markdown + images
     extracted/templates/           ← Auto-generated template structure
+    plan.md                        ← Generation plan (created by Copilot, approved by user)
     output/                        ← Copilot writes markdown here, script converts to DOCX
 ```
 
@@ -46,23 +47,74 @@ python scripts/extract_docx.py workflows/task-<N>-<name>
 ```
 This converts input DOCX files to markdown + images, and extracts template structure.
 
-### Step 3: Read extracted content and generate output
-- Read all files in `workflows/task-<N>-<name>/extracted/` to understand input content
-- Read template structure from `workflows/task-<N>-<name>/extracted/templates/` to know the required output sections
-- Read the workflow-specific instructions from `.github/instructions/` for mapping rules
+### Step 3: Create a plan — STOP and wait for approval
+
+After extraction, read all extracted content and create a plan file at `workflows/task-<N>-<name>/plan.md`.
+
+The plan must include:
+
+```markdown
+# Workflow N Plan
+
+## Input Documents Found
+- [x] document_name.md (X lines, Y images)
+- [x] another_document.md (X lines)
+- [ ] missing_document.md — NOT FOUND
+
+## Template Structure
+List the sections from the template, exactly as extracted.
+
+## Generation Plan
+
+### Output 1: <document_name>
+For each section in the template:
+| Section | Source | Summary of what will be written |
+|---|---|---|
+| 1. Purpose | app_design.md §1 | Brief description of content |
+| 2. Scope | gxp_assessment.md §2 + app_design.md §1.1 | Brief description |
+| ... | ... | ... |
+
+### Output 2: <document_name>
+Same table format.
+
+## Images
+- X screenshots found, will be placed in: [list which sections]
+
+## Gaps
+- List anything missing or unclear from the inputs
+- List sections that will have [To be completed] placeholders
+```
+
+**After writing the plan, show it to the user and ask: "Does this plan look right? Should I proceed?"**
+
+**DO NOT generate any output documents until the user approves.**
+
+### Step 4: Generate output (only after approval)
+
+Once the user approves (says "yes", "go ahead", "approved", "proceed", etc.):
+- Read the approved `plan.md` as the guide
 - Generate output markdown files in `workflows/task-<N>-<name>/output/`
 - **Every output markdown file must start with a YAML frontmatter block** (see below)
-- Follow the template section structure exactly
+- Follow the plan exactly — do not deviate from what was approved
 - Reference images using: `![description](images/filename.png)`
 
-### Step 4: Build output DOCX files
+### Step 5: Build output DOCX files
 ```bash
 python scripts/build_docx.py workflows/task-<N>-<name>
 ```
 Pypandoc converts markdown → styled DOCX using `--reference-doc` from the Word template.
 
-### Step 5: Confirm completion
+### Step 6: Confirm completion
 Report to the user what was generated and where the output files are located.
+
+## Resuming Across Conversations
+
+If a workflow was started in a previous conversation:
+- Check if `workflows/task-<N>-<name>/plan.md` exists
+- If plan exists but no output files → show the plan and ask for approval
+- If plan exists and output `.md` files exist but no `.docx` → run build step
+- If everything exists → report completion
+- Always read `plan.md` before generating — it is the source of truth for what to produce
 
 ## YAML Frontmatter
 
@@ -91,6 +143,7 @@ Populate these values from the input documents where available. Use `[TBD]` for 
 
 ### Content Rules
 - Follow the template structure exactly — do not add or remove sections
+- Follow the approved plan exactly — do not deviate
 - Keep language formal and precise (regulated document style)
 - Preserve all technical details from input documents accurately
 - Do not fabricate information — only use content from the input documents
@@ -122,3 +175,4 @@ To add a new workflow (e.g., Task 2):
 - All document input/output is in DOCX format
 - Process one set of documents at a time (no batch processing)
 - Keep solutions simple and straightforward
+- Always plan before generating — never skip the approval step
