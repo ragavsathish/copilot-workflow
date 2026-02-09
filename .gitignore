@@ -24,3 +24,15 @@ build/
 # Virtual environment
 venv/
 .venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files (user-specific, not tracked)
+.idea/
+*.swp
+*.swo
+
+# Backup files from retrospectives
+.github/instructions/*.backup-*
