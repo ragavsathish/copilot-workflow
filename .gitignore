@@ -1,0 +1,24 @@
+# Workflow generated files (but keep directory structure via .gitkeep)
+workflows/*/extracted/**
+!workflows/*/extracted/.gitkeep
+workflows/*/output/**
+!workflows/*/output/.gitkeep
+workflows/*/plan.md
+
+# Input DOCX files (user-provided, not tracked)
+workflows/*/input/*.docx
+
+# Template DOCX files (user-provided, not tracked)
+templates/**/*.docx
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
