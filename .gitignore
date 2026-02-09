@@ -4,6 +4,8 @@ workflows/*/extracted/**
 workflows/*/output/**
 !workflows/*/output/.gitkeep
 workflows/*/plan.md
+workflows/*/plan-*.md
+workflows/*/review-*.md
 
 # Input DOCX files (user-provided, not tracked)
 workflows/*/input/*.docx
