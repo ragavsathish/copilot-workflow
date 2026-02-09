@@ -1,0 +1,17 @@
+{
+    "chat.agent.enabled": true,
+    "chat.agent.codeBlockProgress": true,
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+    "github.copilot.chat.reviewSelection.instructions": [
+        {
+            "text": "Check for GxP traceability comments, YAML frontmatter, and KISS test case format compliance."
+        }
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.python",
+        "editor.formatOnSave": true
+    },
+    "files.associations": {
+        "*.instructions.md": "markdown"
+    }
+}

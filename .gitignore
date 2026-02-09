@@ -4,6 +4,8 @@ workflows/*/extracted/**
 workflows/*/output/**
 !workflows/*/output/.gitkeep
 workflows/*/plan.md
+workflows/*/plan-*.md
+workflows/*/review-*.md
 
 # Input DOCX files (user-provided, not tracked)
 workflows/*/input/*.docx
@@ -22,3 +24,15 @@ build/
 # Virtual environment
 venv/
 .venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files (user-specific, not tracked)
+.idea/
+*.swp
+*.swo
+
+# Backup files from retrospectives
+.github/instructions/*.backup-*
