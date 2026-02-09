@@ -75,6 +75,12 @@ When creating `plan.md` for this workflow, the generation plan tables must use t
   ```
 - Every screenshot must have a figure number and caption
 
+#### Copilot image tool
+Use `scripts/image_b64.py` to write screenshots into `extracted/images/` and create a wrapped base64 text file (`<name>.<ext>.b64.txt`) plus `<name>.<ext>.meta.json`.
+Call example:
+`python scripts/image_b64.py ./icv_steps_img_003.png --out extracted/images --source-input "ICV_Steps.docx#Step 3" --raw`
+Workflow should parse stdout JSON, then use `Read` to read the `.meta.json` and the wrapped `.b64.txt` (concatenate lines to reconstruct continuous base64 for data URIs if needed).
+
 ## Traceability
 
 At the beginning of each major section, include a traceability note:
