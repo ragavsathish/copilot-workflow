@@ -48,10 +48,10 @@ def find_template(template_dir, output_stem):
     return templates[0] if templates else None
 
 
-def build_docx(md_path, template_path, output_path, image_dir):
+def build_docx(md_path, template_path, output_path, extracted_dir):
     """Convert markdown to styled DOCX using pypandoc."""
     extra_args = [
-        "--resource-path", str(image_dir),
+        "--resource-path", str(extracted_dir),
         "--standalone",
     ]
 
@@ -75,7 +75,7 @@ def main():
 
     wf = Path(sys.argv[1])
     output_dir = wf / "output"
-    image_dir = wf / "extracted" / "images"
+    extracted_dir = wf / "extracted"
     template_dir = Path("templates") / "document template"
 
     md_files = sorted(output_dir.glob("*.md"))
@@ -88,7 +88,7 @@ def main():
     for md in md_files:
         print(f"  {md.name}")
         template = find_template(template_dir, md.stem)
-        build_docx(md, template, output_dir / f"{md.stem}.docx", image_dir)
+        build_docx(md, template, output_dir / f"{md.stem}.docx", extracted_dir)
 
     print("\nDone.")
 
