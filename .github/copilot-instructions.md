@@ -6,7 +6,7 @@ This repository automates document generation workflows. Copilot orchestrates th
 
 - **Purpose**: Automate creation of regulated (GxP) documents from input design documents
 - **Language**: Python (scripts), Markdown (intermediate format)
-- **Dependencies**: `python-docx`, `Pillow` (see `requirements.txt`)
+- **Dependencies**: `python-docx`, `Pillow`, `pypandoc` (see `requirements.txt`)
 
 ## Project Layout
 
@@ -15,10 +15,10 @@ This repository automates document generation workflows. Copilot orchestrates th
   copilot-instructions.md          ← You are here (global rules)
   instructions/                    ← Per-workflow instructions
 scripts/
-  extract_docx.py                  ← DOCX → markdown + images
-  build_docx.py                    ← Markdown + images → styled DOCX
+  extract_docx.py                  ← DOCX → markdown + images (uses python-docx)
+  build_docx.py                    ← Markdown → styled DOCX (uses pypandoc + reference-doc)
 templates/
-  document template/               ← DOCX templates with company styling
+  document template/               ← Word templates for styling (fonts, logo, headers/footers)
 workflows/
   task-<N>-<name>/
     input/                         ← User drops input DOCX files here
@@ -35,6 +35,10 @@ When a user says **"Run workflow N"** or refers to a workflow task, execute thes
 ```bash
 pip install -r requirements.txt
 ```
+Pandoc binary is also required. Install if missing:
+```bash
+pypandoc.download_pandoc()
+```
 
 ### Step 2: Extract input DOCX files
 ```bash
@@ -47,6 +51,7 @@ This converts input DOCX files to markdown + images, and extracts template struc
 - Read template structure from `workflows/task-<N>-<name>/extracted/templates/` to know the required output sections
 - Read the workflow-specific instructions from `.github/instructions/` for mapping rules
 - Generate output markdown files in `workflows/task-<N>-<name>/output/`
+- **Every output markdown file must start with a YAML frontmatter block** (see below)
 - Follow the template section structure exactly
 - Reference images using: `![description](images/filename.png)`
 
@@ -54,10 +59,28 @@ This converts input DOCX files to markdown + images, and extracts template struc
 ```bash
 python scripts/build_docx.py workflows/task-<N>-<name>
 ```
-This converts output markdown files to styled DOCX using the templates.
+Pypandoc converts markdown → styled DOCX using `--reference-doc` from the Word template.
 
 ### Step 5: Confirm completion
 Report to the user what was generated and where the output files are located.
+
+## YAML Frontmatter
+
+Every output markdown file **must** begin with a YAML header. Pandoc uses these variables to populate the Word template fields (title page, headers, footers, etc.):
+
+```yaml
+---
+title: "Document Title"
+subtitle: "Optional Subtitle"
+author: "Author / Team Name"
+date: "2026-02-09"
+version: "1.0"
+status: "Draft"
+document_id: "DOC-001"
+---
+```
+
+Populate these values from the input documents where available. Use `[TBD]` for values not found in the inputs.
 
 ## Document Generation Rules
 
@@ -77,6 +100,7 @@ Report to the user what was generated and where the output files are located.
 - Reference images extracted from input documents: `![Step description](images/filename.png)`
 - Place screenshots inline with their corresponding steps
 - Include a caption/description for every image
+- Pillow is available if images need resizing before embedding
 
 ### Table Handling
 - Preserve all tables from input documents
