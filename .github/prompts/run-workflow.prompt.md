@@ -6,16 +6,25 @@ description: "Run a PDCA document generation workflow end-to-end"
 
 Execute the PDCA lifecycle for a specified workflow task.
 
-## Steps
+## Quick Start
 
-1. **EXTRACT**: Install dependencies if needed (`pip install -r requirements.txt`), then run `python scripts/extract_docx.py workflows/task-${{N}}-${{NAME}}` to convert input DOCX files to markdown and images.
+Tell me which workflow to run:
 
-2. **PLAN**: Read all extracted content from `workflows/task-${{N}}-${{NAME}}/extracted/` and create a dated plan file at `workflows/task-${{N}}-${{NAME}}/plan-YYYY-MM-DD.md`. Present the plan and wait for approval.
+- **Workflow 1** — Technical Design Document + ICV Document (use `/run-workflow-1`)
+- **Workflow 2** — Test Cases from Requirement Specification (use `/run-workflow-2`)
+- **Workflow 3** — Critical Review: Test Case Gap Analysis (use `/run-workflow-3`)
+- **Workflow 4** — Retrospective & Continuous Improvement (use `/run-workflow-4`)
 
-3. **DO** (after approval): Generate output markdown in `workflows/task-${{N}}-${{NAME}}/output/`, then build DOCX with `python scripts/build_docx.py workflows/task-${{N}}-${{NAME}}`.
+Or say "Run workflow N" and I'll follow the PDCA lifecycle:
 
-4. **CHECK**: Report output files, section counts, and any gaps. Ask for review.
+1. **EXTRACT**: `python scripts/extract_docx.py workflows/task-${{N}}-${{NAME}}`
+2. **PLAN**: Create dated plan file. **STOP for approval.**
+3. **DO**: Generate output. Build DOCX. Validate with `python scripts/validate_output.py`.
+4. **CHECK**: Report results. **STOP for review.**
+5. **ACT**: Revise or complete.
 
-5. **ACT**: Revise based on feedback and rebuild, or mark complete if approved.
+## Resuming?
+
+If this workflow was already started, use `/resume-workflow` to pick up where you left off.
 
 Refer to `.github/copilot-instructions.md` for full PDCA details and `.github/instructions/workflow-${{N}}-*.instructions.md` for workflow-specific rules.

@@ -4,14 +4,34 @@
     "github.copilot.chat.codeGeneration.useInstructionFiles": true,
     "github.copilot.chat.reviewSelection.instructions": [
         {
-            "text": "Check for GxP traceability comments, YAML frontmatter, and KISS test case format compliance."
+            "text": "Check for GxP traceability comments (<!-- Source: ... -->), YAML frontmatter completeness, KISS test case format compliance, and run validate_output.py if changes affect output files."
+        }
+    ],
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "text": "Use conventional commits (feat:, fix:, docs:, chore:). Keep subject under 72 chars. Reference workflow numbers when relevant (e.g., 'feat(workflow-1): add validation step')."
+        }
+    ],
+    "github.copilot.chat.testGeneration.instructions": [
+        {
+            "text": "Follow KISS principles: one test = one assertion. Use pytest. Put tests in scripts/tests/. Name test files test_<module>.py. Use fixtures for common setup."
         }
     ],
     "[python]": {
         "editor.defaultFormatter": "ms-python.python",
         "editor.formatOnSave": true
     },
+    "[markdown]": {
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": false
+        }
+    },
     "files.associations": {
-        "*.instructions.md": "markdown"
+        "*.instructions.md": "markdown",
+        "*.agent.md": "markdown",
+        "*.prompt.md": "markdown"
     }
 }

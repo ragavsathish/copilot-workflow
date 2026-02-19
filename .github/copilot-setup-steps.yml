@@ -1,0 +1,22 @@
+# GitHub Copilot Setup Steps
+# This file pre-installs dependencies so Copilot coding agent can work immediately.
+# See: https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions
+
+name: "Copilot Setup"
+
+steps:
+  - name: "Install Python dependencies"
+    run: pip install -r requirements.txt
+
+  - name: "Install Pandoc"
+    run: |
+      if ! command -v pandoc &> /dev/null; then
+        python -c "import pypandoc; pypandoc.download_pandoc()"
+      fi
+
+  - name: "Verify setup"
+    run: |
+      python -c "import docx; print('python-docx OK')"
+      python -c "import pypandoc; print('pypandoc OK')"
+      python -c "from PIL import Image; print('Pillow OK')"
+      pandoc --version | head -1
